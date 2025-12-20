@@ -3,8 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { config } from './config/config.js';
 
-// Importar rutas (las crearemos después)
-// import authRoutes from './routes/auth.routes.js';
+// Importar rutas
+import authRoutes from './routes/auth.routes.js';
 
 dotenv.config();
 
@@ -29,7 +29,7 @@ app.get('/', (req, res) => {
 });
 
 // Rutas de la API
-// app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 
 // Manejo de errores 404
 app.use((req, res) => {
