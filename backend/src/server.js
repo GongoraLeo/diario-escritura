@@ -7,6 +7,11 @@ import { config } from './config/config.js';
 import authRoutes from './routes/auth.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import novelRoutes from './routes/novel.routes.js';
+import characterRoutes from './routes/character.routes.js';
+import plotRoutes from './routes/plot.routes.js';
+import sceneRoutes from './routes/scene.routes.js';
+import timelineRoutes from './routes/timeline.routes.js';
+import notesRoutes from './routes/notes.routes.js';
 
 dotenv.config();
 
@@ -24,8 +29,13 @@ app.get('/', (req, res) => {
         version: '1.0.0',
         endpoints: {
             auth: '/api/auth',
-            users: '/api/users',
-            novels: '/api/novels'
+            admin: '/api/admin',
+            novels: '/api/novels',
+            characters: '/api/characters',
+            plots: '/api/plots',
+            scenes: '/api/scenes',
+            timeline: '/api/timeline',
+            notes: '/api/notes'
         }
     });
 });
@@ -34,6 +44,11 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/novels', novelRoutes);
+app.use('/api/characters', characterRoutes);
+app.use('/api/plots', plotRoutes);
+app.use('/api/scenes', sceneRoutes);
+app.use('/api/timeline', timelineRoutes);
+app.use('/api/notes', notesRoutes);
 
 // Manejo de errores 404
 app.use((req, res) => {
