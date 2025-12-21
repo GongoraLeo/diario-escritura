@@ -80,13 +80,49 @@ export const User = {
     },
 
     /**
-     * Actualizar perfil de usuario
-     */
+   * Actualizar perfil de usuario
+   */
     async updateProfile(id, profileData) {
         const { full_name, bio, avatar_url } = profileData;
         await db.execute(
             'UPDATE users SET full_name = ?, bio = ?, avatar_url = ? WHERE id = ?',
             [full_name, bio, avatar_url, id]
         );
+    },
+
+    /**
+     * Eliminar usuario
+     */
+    async delete(id) {
+        await db.execute('DELETE FROM users WHERE id = ?', [id]);
+    },
+
+    /**
+     * Obtener estadísticas de usuarios
+     */
+    async getStats() {
+        // Total de usuarios
+        const [totalResult] = await db.execute('SELECT COUNT(*) as total FROM users');
+
+        // Usuarios activos
+        const [activeResult] = await db.execute('SELECT COUNT(*) as active FROM users WHERE is_active = true');
+
+        // Usuarios por rol
+        const [roleResult] = await db.execute(
+            'SELECT role, COUNT(*) as count FROM users GROUP BY role'
+        );
+
+        // Usuarios registrados en los últimos 30 días
+        const [recentResult] = await db.execute(
+            'SELECT COUNT(*) as recent FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)'
+        );
+
+        return {
+            total: totalResult[0].total,
+            active: activeResult[0].active,
+            inactive: totalResult[0].total - activeResult[0].active,
+            byRole: roleResult,
+            recentRegistrations: recentResult[0].recent
+        };
     }
 };

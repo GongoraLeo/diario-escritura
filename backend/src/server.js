@@ -5,6 +5,8 @@ import { config } from './config/config.js';
 
 // Importar rutas
 import authRoutes from './routes/auth.routes.js';
+import adminRoutes from './routes/admin.routes.js';
+import novelRoutes from './routes/novel.routes.js';
 
 dotenv.config();
 
@@ -30,6 +32,8 @@ app.get('/', (req, res) => {
 
 // Rutas de la API
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/novels', novelRoutes);
 
 // Manejo de errores 404
 app.use((req, res) => {
