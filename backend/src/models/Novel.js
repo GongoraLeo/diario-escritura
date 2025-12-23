@@ -7,19 +7,16 @@ export const Novel = {
     async create(novelData) {
         const { user_id, title, description, cover_image } = novelData;
 
-        const [result] = await db.execute(
+        // Generar UUID
+        const [[{ uuid }]] = await db.execute('SELECT UUID() as uuid');
+
+        await db.execute(
             `INSERT INTO novels (id, user_id, title, description, cover_image) 
-       VALUES (UUID(), ?, ?, ?, ?)`,
-            [user_id, title, description, cover_image]
+       VALUES (?, ?, ?, ?, ?)`,
+            [uuid, user_id, title, description || null, cover_image || null]
         );
 
-        // Obtener el UUID generado
-        const [rows] = await db.execute(
-            'SELECT id FROM novels WHERE user_id = ? ORDER BY created_at DESC LIMIT 1',
-            [user_id]
-        );
-
-        return rows[0].id;
+        return uuid;
     },
 
     /**

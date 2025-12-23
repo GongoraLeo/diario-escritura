@@ -21,16 +21,20 @@ export const Character = {
             additional_info
         } = characterData;
 
-        const [result] = await db.execute(
+        // Generar UUID
+        const [[{ uuid }]] = await db.execute('SELECT UUID() as uuid');
+
+        await db.execute(
             `INSERT INTO characters (
         id, novel_id, name, avatar, personal_data, physical_appearance,
         psychology, goals, past, present, future, speech_patterns,
         relationships, additional_info
-      ) VALUES (UUID(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
+                uuid,
                 novel_id,
                 name,
-                avatar,
+                avatar || null,
                 JSON.stringify(personal_data || {}),
                 JSON.stringify(physical_appearance || {}),
                 JSON.stringify(psychology || {}),
@@ -44,13 +48,7 @@ export const Character = {
             ]
         );
 
-        // Obtener el UUID generado
-        const [rows] = await db.execute(
-            'SELECT id FROM characters WHERE novel_id = ? ORDER BY created_at DESC LIMIT 1',
-            [novel_id]
-        );
-
-        return rows[0].id;
+        return uuid;
     },
 
     /**
