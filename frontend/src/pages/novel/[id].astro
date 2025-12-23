@@ -1,0 +1,10 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import NovelDetail from '../components/NovelDetail';
+
+const { id } = Astro.params;
+---
+
+<BaseLayout title="Novela">
+  <NovelDetail novelId={id} client:load />
+</BaseLayout>
