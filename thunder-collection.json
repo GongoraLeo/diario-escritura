@@ -1,0 +1,242 @@
+{
+    "clientName": "Thunder Client",
+    "collectionName": "Diario de Escritura API",
+    "collectionId": "diario-escritura-api",
+    "dateExported": "2025-12-21",
+    "version": "1.0",
+    "folders": [
+        {
+            "id": "auth-folder",
+            "name": "1. Autenticación",
+            "requests": []
+        },
+        {
+            "id": "novels-folder",
+            "name": "2. Novelas",
+            "requests": []
+        },
+        {
+            "id": "characters-folder",
+            "name": "3. Personajes",
+            "requests": []
+        },
+        {
+            "id": "plots-folder",
+            "name": "4. Tramas",
+            "requests": []
+        },
+        {
+            "id": "admin-folder",
+            "name": "5. Administración",
+            "requests": []
+        }
+    ],
+    "requests": [
+        {
+            "id": "1",
+            "name": "Registro de Usuario",
+            "url": "http://localhost:3000/api/auth/register",
+            "method": "POST",
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"username\": \"escritor1\",\n  \"email\": \"escritor1@example.com\",\n  \"password\": \"password123\",\n  \"full_name\": \"Juan Escritor\"\n}"
+            },
+            "folderId": "auth-folder"
+        },
+        {
+            "id": "2",
+            "name": "Login",
+            "url": "http://localhost:3000/api/auth/login",
+            "method": "POST",
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"email\": \"escritor1@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "folderId": "auth-folder"
+        },
+        {
+            "id": "3",
+            "name": "Obtener Perfil",
+            "url": "http://localhost:3000/api/auth/profile",
+            "method": "GET",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{token}}"
+                }
+            ],
+            "folderId": "auth-folder"
+        },
+        {
+            "id": "4",
+            "name": "Actualizar Perfil",
+            "url": "http://localhost:3000/api/auth/profile",
+            "method": "PUT",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{token}}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"full_name\": \"Juan Escritor Actualizado\",\n  \"bio\": \"Escritor de novelas de fantasía\"\n}"
+            },
+            "folderId": "auth-folder"
+        },
+        {
+            "id": "5",
+            "name": "Crear Novela",
+            "url": "http://localhost:3000/api/novels",
+            "method": "POST",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{token}}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"title\": \"El Señor de los Anillos\",\n  \"description\": \"Una épica aventura en la Tierra Media\"\n}"
+            },
+            "folderId": "novels-folder"
+        },
+        {
+            "id": "6",
+            "name": "Obtener Mis Novelas",
+            "url": "http://localhost:3000/api/novels",
+            "method": "GET",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{token}}"
+                }
+            ],
+            "folderId": "novels-folder"
+        },
+        {
+            "id": "7",
+            "name": "Obtener Novela por ID",
+            "url": "http://localhost:3000/api/novels/{{novelId}}",
+            "method": "GET",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{token}}"
+                }
+            ],
+            "folderId": "novels-folder"
+        },
+        {
+            "id": "8",
+            "name": "Crear Personaje",
+            "url": "http://localhost:3000/api/characters",
+            "method": "POST",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{token}}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"novel_id\": \"{{novelId}}\",\n  \"name\": \"Aragorn\",\n  \"personal_data\": {\n    \"age\": 87,\n    \"occupation\": \"Guardabosques\"\n  },\n  \"psychology\": {\n    \"traits\": [\"Valiente\", \"Leal\", \"Noble\"]\n  },\n  \"goals\": {\n    \"main_goal\": \"Reclamar el trono de Gondor\"\n  }\n}"
+            },
+            "folderId": "characters-folder"
+        },
+        {
+            "id": "9",
+            "name": "Obtener Personajes de Novela",
+            "url": "http://localhost:3000/api/characters/novel/{{novelId}}",
+            "method": "GET",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{token}}"
+                }
+            ],
+            "folderId": "characters-folder"
+        },
+        {
+            "id": "10",
+            "name": "Crear/Actualizar Trama",
+            "url": "http://localhost:3000/api/plots",
+            "method": "POST",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{token}}"
+                },
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"novel_id\": \"{{novelId}}\",\n  \"structure_type\": \"3_acts\",\n  \"plot_points\": {\n    \"act1\": {\n      \"setup\": \"Frodo recibe el anillo\",\n      \"inciting_incident\": \"Gandalf descubre que es el Anillo Único\"\n    },\n    \"act2\": {\n      \"midpoint\": \"La Comunidad se separa\"\n    },\n    \"act3\": {\n      \"climax\": \"Destrucción del anillo en el Monte del Destino\"\n    }\n  }\n}"
+            },
+            "folderId": "plots-folder"
+        },
+        {
+            "id": "11",
+            "name": "Listar Usuarios (Admin)",
+            "url": "http://localhost:3000/api/admin/users",
+            "method": "GET",
+            "headers": [
+                {
+                    "name": "Authorization",
+                    "value": "Bearer {{adminToken}}"
+                }
+            ],
+            "folderId": "admin-folder"
+        }
+    ],
+    "environments": [
+        {
+            "name": "Local",
+            "variables": [
+                {
+                    "name": "baseUrl",
+                    "value": "http://localhost:3000/api"
+                },
+                {
+                    "name": "token",
+                    "value": "pega-aqui-tu-token-despues-del-login"
+                },
+                {
+                    "name": "novelId",
+                    "value": "pega-aqui-el-id-de-tu-novela"
+                },
+                {
+                    "name": "adminToken",
+                    "value": "token-del-admin"
+                }
+            ]
+        }
+    ]
+}
