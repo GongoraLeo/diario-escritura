@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { novelService, type Novel } from '../services/novelService';
+import { characterService, type Character } from '../services/characterService';
+import CreateCharacterModal from './CreateCharacterModal';
 
 interface NovelDetailProps {
     novelId: string;
@@ -7,11 +9,14 @@ interface NovelDetailProps {
 
 export default function NovelDetail({ novelId }: NovelDetailProps) {
     const [novel, setNovel] = useState<Novel | null>(null);
+    const [characters, setCharacters] = useState<Character[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeSection, setActiveSection] = useState('resumen');
+    const [showCharacterModal, setShowCharacterModal] = useState(false);
 
     useEffect(() => {
         loadNovel();
+        loadCharacters();
     }, [novelId]);
 
     const loadNovel = async () => {
@@ -23,6 +28,19 @@ export default function NovelDetail({ novelId }: NovelDetailProps) {
         } finally {
             setLoading(false);
         }
+    };
+
+    const loadCharacters = async () => {
+        try {
+            const response = await characterService.getByNovel(novelId);
+            setCharacters(response.data.characters);
+        } catch (error) {
+            console.error('Error al cargar personajes:', error);
+        }
+    };
+
+    const handleCharacterCreated = () => {
+        loadCharacters();
     };
 
     if (loading) {
@@ -109,7 +127,7 @@ export default function NovelDetail({ novelId }: NovelDetailProps) {
                                     <div className="text-purple-200 text-sm">Palabras</div>
                                 </div>
                                 <div className="bg-white/10 rounded-lg p-4">
-                                    <div className="text-2xl font-bold text-white">0</div>
+                                    <div className="text-2xl font-bold text-white">{characters.length}</div>
                                     <div className="text-purple-200 text-sm">Personajes</div>
                                 </div>
                             </div>
@@ -121,15 +139,54 @@ export default function NovelDetail({ novelId }: NovelDetailProps) {
                     <div>
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-3xl font-bold text-white">Personajes</h2>
-                            <button className="px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium transition-colors">
+                            <button
+                                onClick={() => setShowCharacterModal(true)}
+                                className="px-4 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg font-medium transition-colors"
+                            >
                                 + Nuevo Personaje
                             </button>
                         </div>
-                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-                            <div className="text-6xl mb-4">👥</div>
-                            <p className="text-white text-lg mb-2">Aún no hay personajes</p>
-                            <p className="text-purple-200">Crea tu primer personaje para comenzar</p>
-                        </div>
+
+                        {characters.length === 0 ? (
+                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+                                <div className="text-6xl mb-4">👥</div>
+                                <p className="text-white text-lg mb-2">Aún no hay personajes</p>
+                                <p className="text-purple-200">Crea tu primer personaje para comenzar</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {characters.map((character) => (
+                                    <div key={character.id} className="bg-white/10 backdrop-blur-md hover:bg-white/20 rounded-2xl overflow-hidden transition-all duration-300 border border-white/20 hover:border-teal-400 cursor-pointer">
+                                        {/* Avatar */}
+                                        <div className="h-48 bg-gradient-to-br from-teal-400 to-cyan-500 relative flex items-center justify-center">
+                                            {character.avatar ? (
+                                                <img src={character.avatar} alt={character.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="text-6xl">👤</div>
+                                            )}
+                                        </div>
+                                        {/* Content */}
+                                        <div className="p-6">
+                                            <h3 className="text-xl font-bold text-white mb-2">
+                                                {character.name}
+                                            </h3>
+                                            <div className="space-y-1 text-sm">
+                                                {character.personal_data?.age && (
+                                                    <p className="text-purple-200">
+                                                        <span className="text-teal-300">Edad:</span> {character.personal_data.age}
+                                                    </p>
+                                                )}
+                                                {character.personal_data?.occupation && (
+                                                    <p className="text-purple-200">
+                                                        <span className="text-teal-300">Ocupación:</span> {character.personal_data.occupation}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -229,6 +286,14 @@ export default function NovelDetail({ novelId }: NovelDetailProps) {
                     </div>
                 )}
             </main>
+
+            {/* Modal de Personajes */}
+            <CreateCharacterModal
+                isOpen={showCharacterModal}
+                onClose={() => setShowCharacterModal(false)}
+                onSuccess={handleCharacterCreated}
+                novelId={novelId}
+            />
         </div>
     );
 }
