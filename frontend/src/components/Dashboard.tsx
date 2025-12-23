@@ -109,8 +109,8 @@ export default function Dashboard() {
                     <button
                         onClick={() => setActiveSection('novelas')}
                         className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition-all ${activeSection === 'novelas'
-                                ? 'bg-white/20 text-white font-medium'
-                                : 'text-purple-100 hover:bg-white/10'
+                            ? 'bg-white/20 text-white font-medium'
+                            : 'text-purple-100 hover:bg-white/10'
                             }`}
                     >
                         📚 Mis Novelas
@@ -118,8 +118,8 @@ export default function Dashboard() {
                     <button
                         onClick={() => setActiveSection('estadisticas')}
                         className={`w-full text-left px-4 py-3 rounded-lg transition-all ${activeSection === 'estadisticas'
-                                ? 'bg-white/20 text-white font-medium'
-                                : 'text-purple-100 hover:bg-white/10'
+                            ? 'bg-white/20 text-white font-medium'
+                            : 'text-purple-100 hover:bg-white/10'
                             }`}
                     >
                         📊 Estadísticas
@@ -172,7 +172,11 @@ export default function Dashboard() {
 
                                 {/* Novelas del usuario */}
                                 {novels.map((novel, index) => (
-                                    <div key={novel.id} className="group cursor-pointer">
+                                    <div
+                                        key={novel.id}
+                                        className="group cursor-pointer"
+                                        onClick={() => window.location.href = `/novel/${novel.id}`}
+                                    >
                                         <div className="bg-white/10 backdrop-blur-md hover:bg-white/20 rounded-2xl overflow-hidden transition-all duration-300 border border-white/20 hover:border-teal-400">
                                             {/* Cover */}
                                             <div className={`h-40 bg-gradient-to-br ${getRandomGradient(index)} relative`}>
