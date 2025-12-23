@@ -12,13 +12,14 @@ import {
 const createNovelSchema = z.object({
     title: z.string().min(1, 'El título es requerido').max(255),
     description: z.string().optional(),
-    cover_image: z.string().url('URL de imagen inválida').optional()
+    cover_image: z.string().url('URL de imagen inválida').optional().or(z.literal(''))
 });
+
 
 const updateNovelSchema = z.object({
     title: z.string().min(1).max(255).optional(),
     description: z.string().optional(),
-    cover_image: z.string().url().optional()
+    cover_image: z.string().url().optional().or(z.literal(''))
 });
 
 /**
