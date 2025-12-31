@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { novelService, type Novel } from '../services/novelService';
 import { characterService, type Character } from '../services/characterService';
 import { plotService, plotStructures, type Plot } from '../services/plotService';
+import { sceneService, timeOfDayOptions, statusOptions, type Scene } from '../services/sceneService';
 import CreateCharacterModal from './CreateCharacterModal';
 import PlotModal from './PlotModal';
+import SceneModal from './SceneModal';
 
 interface NovelDetailProps {
     novelId: string;
@@ -13,15 +15,19 @@ export default function NovelDetail({ novelId }: NovelDetailProps) {
     const [novel, setNovel] = useState<Novel | null>(null);
     const [characters, setCharacters] = useState<Character[]>([]);
     const [plot, setPlot] = useState<Plot | null>(null);
+    const [scenes, setScenes] = useState<Scene[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeSection, setActiveSection] = useState('resumen');
     const [showCharacterModal, setShowCharacterModal] = useState(false);
     const [showPlotModal, setShowPlotModal] = useState(false);
+    const [showSceneModal, setShowSceneModal] = useState(false);
+    const [selectedScene, setSelectedScene] = useState<Scene | null>(null);
 
     useEffect(() => {
         loadNovel();
         loadCharacters();
         loadPlot();
+        loadScenes();
     }, [novelId]);
 
     const loadNovel = async () => {
@@ -53,12 +59,36 @@ export default function NovelDetail({ novelId }: NovelDetailProps) {
         }
     };
 
+    const loadScenes = async () => {
+        try {
+            const response = await sceneService.getByNovel(novelId);
+            setScenes(response.data.scenes);
+        } catch (error) {
+            console.error('Error al cargar escenas:', error);
+        }
+    };
+
     const handleCharacterCreated = () => {
         loadCharacters();
     };
 
     const handlePlotSaved = () => {
         loadPlot();
+    };
+
+    const handleSceneSaved = () => {
+        loadScenes();
+        setSelectedScene(null);
+    };
+
+    const handleNewScene = () => {
+        setSelectedScene(null);
+        setShowSceneModal(true);
+    };
+
+    const handleEditScene = (scene: Scene) => {
+        setSelectedScene(scene);
+        setShowSceneModal(true);
     };
 
     if (loading) {
@@ -263,15 +293,83 @@ export default function NovelDetail({ novelId }: NovelDetailProps) {
                     <div>
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-3xl font-bold text-white">Escaleta de Escenas</h2>
-                            <button className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors">
+                            <button
+                                onClick={handleNewScene}
+                                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium transition-colors"
+                            >
                                 + Nueva Escena
                             </button>
                         </div>
-                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-                            <div className="text-6xl mb-4">📋</div>
-                            <p className="text-white text-lg mb-2">No hay escenas planificadas</p>
-                            <p className="text-purple-200">Crea tu primera escena en la escaleta</p>
-                        </div>
+
+                        {scenes.length === 0 ? (
+                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+                                <div className="text-6xl mb-4">📋</div>
+                                <p className="text-white text-lg mb-2">No hay escenas planificadas</p>
+                                <p className="text-purple-200">Crea tu primera escena en la escaleta</p>
+                            </div>
+                        ) : (
+                            <div className="bg-white/10 backdrop-blur-md rounded-2xl overflow-hidden border border-white/20">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full">
+                                        <thead className="bg-white/10">
+                                            <tr>
+                                                <th className="px-4 py-3 text-left text-sm font-semibold text-white">#</th>
+                                                <th className="px-4 py-3 text-left text-sm font-semibold text-white">Localización</th>
+                                                <th className="px-4 py-3 text-left text-sm font-semibold text-white">Hora</th>
+                                                <th className="px-4 py-3 text-left text-sm font-semibold text-white">Personajes</th>
+                                                <th className="px-4 py-3 text-left text-sm font-semibold text-white">POV</th>
+                                                <th className="px-4 py-3 text-left text-sm font-semibold text-white">Objetivo</th>
+                                                <th className="px-4 py-3 text-left text-sm font-semibold text-white">Estado</th>
+                                                <th className="px-4 py-3 text-left text-sm font-semibold text-white">Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {scenes.map((scene) => (
+                                                <tr key={scene.id} className="border-t border-white/10 hover:bg-white/5 transition-colors">
+                                                    <td className="px-4 py-3 text-white font-medium">{scene.scene_number}</td>
+                                                    <td className="px-4 py-3 text-purple-100">{scene.location || '-'}</td>
+                                                    <td className="px-4 py-3">
+                                                        <span className="text-purple-100">
+                                                            {timeOfDayOptions.find(t => t.value === scene.time_of_day)?.icon}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {scene.characters?.slice(0, 2).map((char, i) => (
+                                                                <span key={i} className="text-xs bg-orange-500/20 text-orange-200 px-2 py-1 rounded">
+                                                                    {char}
+                                                                </span>
+                                                            ))}
+                                                            {scene.characters && scene.characters.length > 2 && (
+                                                                <span className="text-xs text-purple-300">+{scene.characters.length - 2}</span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-purple-100">{scene.pov || '-'}</td>
+                                                    <td className="px-4 py-3 text-purple-100 max-w-xs truncate">{scene.objective || '-'}</td>
+                                                    <td className="px-4 py-3">
+                                                        <span className={`text-xs px-2 py-1 rounded-full ${scene.status === 'complete' ? 'bg-green-500/20 text-green-200' :
+                                                                scene.status === 'revision' ? 'bg-orange-500/20 text-orange-200' :
+                                                                    'bg-gray-500/20 text-gray-200'
+                                                            }`}>
+                                                            {statusOptions.find(s => s.value === scene.status)?.label}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <button
+                                                            onClick={() => handleEditScene(scene)}
+                                                            className="text-teal-300 hover:text-teal-100 transition-colors"
+                                                        >
+                                                            ✏️ Editar
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -354,6 +452,15 @@ export default function NovelDetail({ novelId }: NovelDetailProps) {
                 onSuccess={handlePlotSaved}
                 novelId={novelId}
                 existingPlot={plot}
+            />
+
+            <SceneModal
+                isOpen={showSceneModal}
+                onClose={() => setShowSceneModal(false)}
+                onSuccess={handleSceneSaved}
+                novelId={novelId}
+                sceneNumber={scenes.length + 1}
+                existingScene={selectedScene}
             />
         </div>
     );
