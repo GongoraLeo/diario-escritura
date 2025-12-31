@@ -6,6 +6,7 @@ import { sceneService, timeOfDayOptions, statusOptions, type Scene } from '../se
 import CreateCharacterModal from './CreateCharacterModal';
 import PlotModal from './PlotModal';
 import SceneModal from './SceneModal';
+import TimelineView from './TimelineView';
 
 interface NovelDetailProps {
     novelId: string;
@@ -349,8 +350,8 @@ export default function NovelDetail({ novelId }: NovelDetailProps) {
                                                     <td className="px-4 py-3 text-purple-100 max-w-xs truncate">{scene.objective || '-'}</td>
                                                     <td className="px-4 py-3">
                                                         <span className={`text-xs px-2 py-1 rounded-full ${scene.status === 'complete' ? 'bg-green-500/20 text-green-200' :
-                                                                scene.status === 'revision' ? 'bg-orange-500/20 text-orange-200' :
-                                                                    'bg-gray-500/20 text-gray-200'
+                                                            scene.status === 'revision' ? 'bg-orange-500/20 text-orange-200' :
+                                                                'bg-gray-500/20 text-gray-200'
                                                             }`}>
                                                             {statusOptions.find(s => s.value === scene.status)?.label}
                                                         </span>
@@ -375,17 +376,8 @@ export default function NovelDetail({ novelId }: NovelDetailProps) {
 
                 {activeSection === 'timeline' && (
                     <div>
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-3xl font-bold text-white">Línea de Tiempo</h2>
-                            <button className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg font-medium transition-colors">
-                                + Nueva Pista
-                            </button>
-                        </div>
-                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-                            <div className="text-6xl mb-4">⏱️</div>
-                            <p className="text-white text-lg mb-2">Timeline vacío</p>
-                            <p className="text-purple-200">Crea pistas para organizar los eventos de tu historia</p>
-                        </div>
+                        <h2 className="text-3xl font-bold text-white mb-6">Línea de Tiempo</h2>
+                        <TimelineView novelId={novelId} />
                     </div>
                 )}
 
