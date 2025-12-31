@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { novelService, type Novel } from '../services/novelService';
 import { characterService, type Character } from '../services/characterService';
+import { plotService, plotStructures, type Plot } from '../services/plotService';
 import CreateCharacterModal from './CreateCharacterModal';
+import PlotModal from './PlotModal';
 
 interface NovelDetailProps {
     novelId: string;
@@ -10,13 +12,16 @@ interface NovelDetailProps {
 export default function NovelDetail({ novelId }: NovelDetailProps) {
     const [novel, setNovel] = useState<Novel | null>(null);
     const [characters, setCharacters] = useState<Character[]>([]);
+    const [plot, setPlot] = useState<Plot | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeSection, setActiveSection] = useState('resumen');
     const [showCharacterModal, setShowCharacterModal] = useState(false);
+    const [showPlotModal, setShowPlotModal] = useState(false);
 
     useEffect(() => {
         loadNovel();
         loadCharacters();
+        loadPlot();
     }, [novelId]);
 
     const loadNovel = async () => {
@@ -39,8 +44,21 @@ export default function NovelDetail({ novelId }: NovelDetailProps) {
         }
     };
 
+    const loadPlot = async () => {
+        try {
+            const response = await plotService.getByNovel(novelId);
+            setPlot(response.data);
+        } catch (error) {
+            console.error('Error al cargar trama:', error);
+        }
+    };
+
     const handleCharacterCreated = () => {
         loadCharacters();
+    };
+
+    const handlePlotSaved = () => {
+        loadPlot();
     };
 
     if (loading) {
@@ -95,8 +113,8 @@ export default function NovelDetail({ novelId }: NovelDetailProps) {
                             key={item.id}
                             onClick={() => setActiveSection(item.id)}
                             className={`w-full text-left px-4 py-3 rounded-lg mb-2 transition-all ${activeSection === item.id
-                                    ? 'bg-white/20 text-white font-medium'
-                                    : 'text-purple-100 hover:bg-white/10'
+                                ? 'bg-white/20 text-white font-medium'
+                                : 'text-purple-100 hover:bg-white/10'
                                 }`}
                         >
                             {item.icon} {item.label}
@@ -194,15 +212,50 @@ export default function NovelDetail({ novelId }: NovelDetailProps) {
                     <div>
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-3xl font-bold text-white">Estructura de Trama</h2>
-                            <button className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors">
-                                Configurar Trama
+                            <button
+                                onClick={() => setShowPlotModal(true)}
+                                className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors"
+                            >
+                                {plot ? 'Editar Trama' : 'Configurar Trama'}
                             </button>
                         </div>
-                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-                            <div className="text-6xl mb-4">📖</div>
-                            <p className="text-white text-lg mb-2">Estructura de trama no configurada</p>
-                            <p className="text-purple-200">Elige entre 3 actos, 5 actos, Viaje del Héroe, Save the Cat, etc.</p>
-                        </div>
+
+                        {!plot ? (
+                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+                                <div className="text-6xl mb-4">📖</div>
+                                <p className="text-white text-lg mb-2">Estructura de trama no configurada</p>
+                                <p className="text-purple-200">Elige entre 3 actos, 5 actos, Viaje del Héroe, Save the Cat, etc.</p>
+                            </div>
+                        ) : (
+                            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+                                <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/20">
+                                    <div className="text-4xl">
+                                        {plotStructures[plot.structure_type]?.icon}
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold text-white">
+                                            {plotStructures[plot.structure_type]?.name}
+                                        </h3>
+                                        <p className="text-sm text-purple-200">
+                                            {plotStructures[plot.structure_type]?.description}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    {plotStructures[plot.structure_type]?.fields.map((field) => (
+                                        plot.plot_points[field.key] && (
+                                            <div key={field.key} className="bg-white/5 rounded-lg p-4">
+                                                <h4 className="font-semibold text-white mb-2">{field.label}</h4>
+                                                <p className="text-purple-100 whitespace-pre-wrap">
+                                                    {plot.plot_points[field.key]}
+                                                </p>
+                                            </div>
+                                        )
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
@@ -287,12 +340,20 @@ export default function NovelDetail({ novelId }: NovelDetailProps) {
                 )}
             </main>
 
-            {/* Modal de Personajes */}
+            {/* Modales */}
             <CreateCharacterModal
                 isOpen={showCharacterModal}
                 onClose={() => setShowCharacterModal(false)}
                 onSuccess={handleCharacterCreated}
                 novelId={novelId}
+            />
+
+            <PlotModal
+                isOpen={showPlotModal}
+                onClose={() => setShowPlotModal(false)}
+                onSuccess={handlePlotSaved}
+                novelId={novelId}
+                existingPlot={plot}
             />
         </div>
     );

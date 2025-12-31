@@ -1,6 +1,7 @@
 # Diario de Escritura - Aplicación para Escritores de Novelas
 
-Aplicación web completa para la planificación y escritura de novelas, con gestión de múltiples proyectos, fichas de personajes, estructuras de trama, escaletas, líneas de tiempo interactivas y editor de texto enriquecido.
+Aplicación web completa para la planificación y escritura de novelas desarrollada por **Leonardo Góngora**. 
+Con gestión de múltiples proyectos, fichas de personajes, estructuras de trama, escaletas, líneas de tiempo interactivas y editor de texto enriquecido.
 
 ## 🚀 Stack Tecnológico
 
