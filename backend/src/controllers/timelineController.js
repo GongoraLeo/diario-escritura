@@ -10,18 +10,19 @@ import {
 } from '../utils/response.js';
 
 const trackSchema = z.object({
-    track_name: z.string().min(1),
-    track_order: z.number().int().optional()
+    name: z.string().min(1),
+    color: z.string().optional(),
+    order: z.number().int().optional(),
+    max_units: z.number().int().min(1).optional()
 });
 
 const eventSchema = z.object({
+    track_id: z.string().optional(),
     title: z.string().min(1),
-    date_chapter: z.string().optional(),
-    characters: z.array(z.string()).optional(),
     description: z.string().optional(),
-    importance: z.number().int().min(1).max(5).optional(),
     color: z.string().optional(),
-    position_x: z.number().int().optional()
+    start_position: z.number().nullable().optional(),
+    duration: z.number().nullable().optional()
 });
 
 const checkNovelAccess = async (novelId, userId, userRole) => {
@@ -47,7 +48,7 @@ export const createTrack = async (req, res) => {
         const validatedData = trackSchema.parse(req.body);
         const trackId = await Timeline.createTrack({ novel_id, ...validatedData });
         const tracks = await Timeline.findTracksByNovelId(novel_id);
-        const track = tracks.find(t => t.id === trackId);
+        const track = tracks.find(t => t.id === trackId || t.name === validatedData.name);
 
         return successResponse(res, track, 'Pista creada exitosamente', 201);
     } catch (error) {
@@ -80,12 +81,21 @@ export const getTracksByNovel = async (req, res) => {
 export const updateTrack = async (req, res) => {
     try {
         const { id } = req.params;
-        const validatedData = trackSchema.partial().parse(req.body);
+        // Solo permitir campos definidos en el esquema para evitar errores de validación
+        const { name, color, order, max_units } = req.body;
+        const dataToValidate = {};
+        if (name !== undefined) dataToValidate.name = name;
+        if (color !== undefined) dataToValidate.color = color;
+        if (order !== undefined) dataToValidate.order = order;
+        if (max_units !== undefined) dataToValidate.max_units = max_units;
+
+        const validatedData = trackSchema.partial().parse(dataToValidate);
         await Timeline.updateTrack(id, validatedData);
 
         return successResponse(res, null, 'Pista actualizada exitosamente');
     } catch (error) {
         if (error instanceof z.ZodError) {
+            console.log('Validation error in updateTrack:', error.errors);
             return validationErrorResponse(res, error.errors);
         }
         console.error('Error al actualizar pista:', error);
@@ -107,9 +117,9 @@ export const deleteTrack = async (req, res) => {
 // Controladores de eventos
 export const createEvent = async (req, res) => {
     try {
-        const { timeline_id } = req.body;
+        const { track_id } = req.body;
         const validatedData = eventSchema.parse(req.body);
-        const eventId = await Timeline.createEvent({ timeline_id, ...validatedData });
+        const eventId = await Timeline.createEvent({ track_id, ...validatedData });
         const event = await Timeline.findEventById(eventId);
 
         return successResponse(res, event, 'Evento creado exitosamente', 201);
@@ -136,6 +146,7 @@ export const getEventsByTrack = async (req, res) => {
 export const updateEvent = async (req, res) => {
     try {
         const { id } = req.params;
+        console.log('Update Event Request:', { id, body: req.body });
         const validatedData = eventSchema.partial().parse(req.body);
         await Timeline.updateEvent(id, validatedData);
         const updatedEvent = await Timeline.findEventById(id);
@@ -143,6 +154,7 @@ export const updateEvent = async (req, res) => {
         return successResponse(res, updatedEvent, 'Evento actualizado exitosamente');
     } catch (error) {
         if (error instanceof z.ZodError) {
+            console.log('Zod Validation Error:', error.errors);
             return validationErrorResponse(res, error.errors);
         }
         console.error('Error al actualizar evento:', error);

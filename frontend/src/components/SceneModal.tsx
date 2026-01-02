@@ -22,7 +22,7 @@ export default function SceneModal({ isOpen, onClose, onSuccess, novelId, sceneN
         description: '',
         language_features: [],
         themes: [],
-        dramatic_beats: {},
+        dramatic_beats: [],
         plot_connection: '',
         emotional_state: '',
         notes: '',

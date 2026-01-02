@@ -17,7 +17,7 @@ const sceneSchema = z.object({
     pov: z.string().optional(),
     objective: z.string().optional(),
     description: z.string().optional(),
-    language_features: z.object({}).passthrough().optional(),
+    language_features: z.array(z.string()).optional(),
     themes: z.array(z.string()).optional(),
     dramatic_beats: z.array(z.string()).optional(),
     plot_connection: z.string().optional(),

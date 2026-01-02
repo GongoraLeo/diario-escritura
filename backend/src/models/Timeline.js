@@ -1,29 +1,55 @@
+import crypto from 'node:crypto';
 import db from '../config/database.js';
 
 export const Timeline = {
     async createTrack(trackData) {
-        const { novel_id, track_name, track_order } = trackData;
-        const [result] = await db.execute(
-            'INSERT INTO timelines (novel_id, track_name, track_order) VALUES (?, ?, ?)',
-            [novel_id, track_name, track_order || 0]
+        const { novel_id, name, color, order, max_units } = trackData;
+        const id = crypto.randomUUID();
+        await db.execute(
+            'INSERT INTO timelines (id, novel_id, name, color, `order`, max_units) VALUES (?, ?, ?, ?, ?, ?)',
+            [id, novel_id, name, color || '#8B5CF6', order || 0, max_units || 100]
         );
-        return result.insertId;
+        return id;
     },
 
     async findTracksByNovelId(novel_id) {
         const [rows] = await db.execute(
-            'SELECT * FROM timelines WHERE novel_id = ? ORDER BY track_order ASC',
+            'SELECT * FROM timelines WHERE novel_id = ? ORDER BY `order` ASC',
             [novel_id]
         );
         return rows;
     },
 
     async updateTrack(id, trackData) {
-        const { track_name, track_order } = trackData;
-        await db.execute(
-            'UPDATE timelines SET track_name = ?, track_order = ? WHERE id = ?',
-            [track_name, track_order, id]
-        );
+        const { name, color, order, max_units } = trackData;
+
+        let query = 'UPDATE timelines SET ';
+        const params = [];
+        const updates = [];
+
+        if (name !== undefined) {
+            updates.push('name = ?');
+            params.push(name);
+        }
+        if (color !== undefined) {
+            updates.push('color = ?');
+            params.push(color);
+        }
+        if (order !== undefined) {
+            updates.push('`order` = ?');
+            params.push(order);
+        }
+        if (max_units !== undefined) {
+            updates.push('max_units = ?');
+            params.push(max_units);
+        }
+
+        if (updates.length === 0) return;
+
+        query += updates.join(', ') + ' WHERE id = ?';
+        params.push(id);
+
+        await db.execute(query, params);
     },
 
     async deleteTrack(id) {
@@ -32,60 +58,79 @@ export const Timeline = {
 
     async createEvent(eventData) {
         const {
-            timeline_id, title, date_chapter, characters, description,
-            importance, color, position_x
+            track_id, title, description,
+            color, start_position, duration
         } = eventData;
+        const id = crypto.randomUUID();
 
-        const [result] = await db.execute(
-            `INSERT INTO timeline_events (
-        timeline_id, title, date_chapter, characters, description,
-        importance, color, position_x
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        await db.execute(
+            `INSERT INTO timeline_events(
+    id, track_id, title, description,
+    color, start_position, duration
+) VALUES(?, ?, ?, ?, ?, ?, ?)`,
             [
-                timeline_id, title, date_chapter, JSON.stringify(characters || []),
-                description, importance || 3, color || '#FFF59D', position_x || 0
+                id, track_id, title, description || '',
+                color || '#8B5CF6', start_position || 0, duration || 10
             ]
         );
-        return result.insertId;
+        return id;
     },
 
-    async findEventsByTrackId(timeline_id) {
+    async findEventsByTrackId(track_id) {
         const [rows] = await db.execute(
-            'SELECT * FROM timeline_events WHERE timeline_id = ? ORDER BY position_x ASC',
-            [timeline_id]
+            'SELECT * FROM timeline_events WHERE track_id = ? ORDER BY start_position ASC',
+            [track_id]
         );
-        return rows.map(row => ({
-            ...row,
-            characters: JSON.parse(row.characters || '[]')
-        }));
+        return rows;
     },
 
     async findEventById(id) {
         const [rows] = await db.execute('SELECT * FROM timeline_events WHERE id = ?', [id]);
         if (rows.length === 0) return null;
-        const row = rows[0];
-        return {
-            ...row,
-            characters: JSON.parse(row.characters || '[]')
-        };
+        return rows[0];
     },
 
     async updateEvent(id, eventData) {
         const {
-            title, date_chapter, characters, description,
-            importance, color, position_x
+            track_id, title, description,
+            color, start_position, duration
         } = eventData;
 
-        await db.execute(
-            `UPDATE timeline_events SET
-        title = ?, date_chapter = ?, characters = ?, description = ?,
-        importance = ?, color = ?, position_x = ?
-      WHERE id = ?`,
-            [
-                title, date_chapter, JSON.stringify(characters || []),
-                description, importance, color, position_x, id
-            ]
-        );
+        let query = 'UPDATE timeline_events SET ';
+        const params = [];
+        const updates = [];
+
+        if (track_id !== undefined) {
+            updates.push('track_id = ?');
+            params.push(track_id);
+        }
+        if (title !== undefined) {
+            updates.push('title = ?');
+            params.push(title);
+        }
+        if (description !== undefined) {
+            updates.push('description = ?');
+            params.push(description);
+        }
+        if (color !== undefined) {
+            updates.push('color = ?');
+            params.push(color);
+        }
+        if (start_position !== undefined) {
+            updates.push('start_position = ?');
+            params.push(start_position);
+        }
+        if (duration !== undefined) {
+            updates.push('duration = ?');
+            params.push(duration);
+        }
+
+        if (updates.length === 0) return;
+
+        query += updates.join(', ') + ' WHERE id = ?';
+        params.push(id);
+
+        await db.execute(query, params);
     },
 
     async deleteEvent(id) {

@@ -1,31 +1,33 @@
+import crypto from 'node:crypto';
 import db from '../config/database.js';
 
 export const Scene = {
     async create(sceneData) {
         const {
-            novel_id, scene_number, location, time_of_day, characters,
-            pov, objective, description, language_features, themes,
-            dramatic_beats, plot_connection, emotional_state, notes, status
+            novel_id, scene_number, title, location,
+            time_of_day, characters, description, pov,
+            objective, style, themes, emotional_tone,
+            pacing, dramatic_beats, status, language_features
         } = sceneData;
 
-        const [result] = await db.execute(
+        const id = crypto.randomUUID();
+
+        await db.execute(
             `INSERT INTO scenes (
-        novel_id, scene_number, location, time_of_day, characters, pov,
-        objective, description, language_features, themes, dramatic_beats,
-        plot_connection, emotional_state, notes, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        id, novel_id, scene_number, title, location, 
+        time_of_day, characters, description, pov,
+        objective, style, themes, emotional_tone,
+        pacing, dramatic_beats, status, language_features
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-                novel_id, scene_number, location, time_of_day,
-                JSON.stringify(characters || []),
-                pov, objective, description,
-                JSON.stringify(language_features || {}),
-                JSON.stringify(themes || []),
-                JSON.stringify(dramatic_beats || []),
-                plot_connection, emotional_state, notes, status || 'draft'
+                id, novel_id, scene_number, title, location,
+                time_of_day, JSON.stringify(characters || []), description, pov,
+                objective, style, JSON.stringify(themes || []), emotional_tone,
+                pacing, JSON.stringify(dramatic_beats || []), status || 'draft',
+                JSON.stringify(language_features || [])
             ]
         );
-
-        return result.insertId;
+        return id;
     },
 
     async findByNovelId(novel_id) {
@@ -37,7 +39,7 @@ export const Scene = {
         return rows.map(row => ({
             ...row,
             characters: JSON.parse(row.characters || '[]'),
-            language_features: JSON.parse(row.language_features || '{}'),
+            language_features: JSON.parse(row.language_features || '[]'),
             themes: JSON.parse(row.themes || '[]'),
             dramatic_beats: JSON.parse(row.dramatic_beats || '[]')
         }));
@@ -51,33 +53,36 @@ export const Scene = {
         return {
             ...row,
             characters: JSON.parse(row.characters || '[]'),
-            language_features: JSON.parse(row.language_features || '{}'),
+            language_features: JSON.parse(row.language_features || '[]'),
             themes: JSON.parse(row.themes || '[]'),
             dramatic_beats: JSON.parse(row.dramatic_beats || '[]')
         };
     },
 
     async update(id, sceneData) {
-        const {
-            scene_number, location, time_of_day, characters, pov, objective,
-            description, language_features, themes, dramatic_beats,
-            plot_connection, emotional_state, notes, status
-        } = sceneData;
+        const fields = [];
+        const values = [];
 
-        await db.execute(
-            `UPDATE scenes SET
-        scene_number = ?, location = ?, time_of_day = ?, characters = ?,
-        pov = ?, objective = ?, description = ?, language_features = ?,
-        themes = ?, dramatic_beats = ?, plot_connection = ?,
-        emotional_state = ?, notes = ?, status = ?
-      WHERE id = ?`,
-            [
-                scene_number, location, time_of_day, JSON.stringify(characters || []),
-                pov, objective, description, JSON.stringify(language_features || {}),
-                JSON.stringify(themes || []), JSON.stringify(dramatic_beats || []),
-                plot_connection, emotional_state, notes, status, id
-            ]
-        );
+        // Mapeo de campos que deben ser stringificados
+        const jsonFields = ['characters', 'language_features', 'themes', 'dramatic_beats'];
+
+        for (const [key, value] of Object.entries(sceneData)) {
+            if (value === undefined) continue;
+
+            fields.push(`${key} = ?`);
+            if (jsonFields.includes(key)) {
+                // Asegurar que sea array si es null/undefined
+                values.push(JSON.stringify(value || []));
+            } else {
+                values.push(value);
+            }
+        }
+
+        if (fields.length === 0) return;
+
+        values.push(id);
+        const query = `UPDATE scenes SET ${fields.join(', ')} WHERE id = ?`;
+        await db.execute(query, values);
     },
 
     async delete(id) {

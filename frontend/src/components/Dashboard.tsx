@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { authService, type User } from '../services/authService';
 import { novelService, type Novel } from '../services/novelService';
 import CreateNovelModal from './CreateNovelModal';
+import ThemeToggle from './ThemeToggle';
 
 export default function Dashboard() {
     const [user, setUser] = useState<User | null>(null);
@@ -96,13 +97,16 @@ export default function Dashboard() {
         <div className="flex h-screen bg-gradient-to-br from-purple-900 via-teal-800 to-purple-900">
             {/* Sidebar */}
             <aside className="w-64 bg-white/10 backdrop-blur-md border-r border-white/20 flex flex-col">
-                <div className="p-6 border-b border-white/20">
-                    <h1 className="text-2xl font-bold text-white mb-1">
-                        Diario de Escritura
-                    </h1>
-                    <p className="text-sm text-purple-200">
-                        {user?.full_name || user?.username}
-                    </p>
+                <div className="p-6 border-b border-white/20 flex justify-between items-start">
+                    <div>
+                        <h1 className="text-2xl font-bold text-white mb-1">
+                            Diario de Escritura
+                        </h1>
+                        <p className="text-sm text-purple-200">
+                            {user?.full_name || user?.username}
+                        </p>
+                    </div>
+                    <ThemeToggle />
                 </div>
 
                 <nav className="flex-1 p-4">

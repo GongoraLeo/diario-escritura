@@ -1,13 +1,15 @@
+import crypto from 'node:crypto';
 import db from '../config/database.js';
 
 export const Note = {
     async create(noteData) {
         const { novel_id, type, title, content } = noteData;
-        const [result] = await db.execute(
-            'INSERT INTO notes (novel_id, type, title, content) VALUES (?, ?, ?, ?)',
-            [novel_id, type, title, content]
+        const id = crypto.randomUUID();
+        await db.execute(
+            'INSERT INTO notes (id, novel_id, type, title, content) VALUES (?, ?, ?, ?, ?)',
+            [id, novel_id, type, title, content || null]
         );
-        return result.insertId;
+        return id;
     },
 
     async findByNovelId(novel_id, type = null) {

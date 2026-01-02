@@ -16,13 +16,13 @@ router.use(authMiddleware);
 
 // Rutas de pistas
 router.post('/tracks', createTrack);
-router.get('/tracks/novel/:novelId', getTracksByNovel);
+router.get('/novel/:novelId/tracks', getTracksByNovel); // Ajustado
 router.put('/tracks/:id', updateTrack);
 router.delete('/tracks/:id', deleteTrack);
 
 // Rutas de eventos
 router.post('/events', createEvent);
-router.get('/events/track/:trackId', getEventsByTrack);
+router.get('/tracks/:trackId/events', getEventsByTrack); // Ajustado
 router.put('/events/:id', updateEvent);
 router.delete('/events/:id', deleteEvent);
 

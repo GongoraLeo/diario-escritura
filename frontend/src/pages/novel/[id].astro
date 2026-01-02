@@ -6,5 +6,5 @@ const { id } = Astro.params;
 ---
 
 <BaseLayout title="Novela">
-  <NovelDetail novelId={id} client:load />
+  <NovelDetail novelId={id} client:only="react" />
 </BaseLayout>
